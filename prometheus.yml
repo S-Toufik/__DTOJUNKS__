@@ -1,0 +1,10 @@
+scrape_configs:
+  - job_name: 'coherence'
+    metrics_path: '/metrics'
+    scrape_interval: 5s
+
+    static_configs:
+      - targets:
+        - '10.0.0.5:30000'
+        - '10.0.0.6:30000'
+        - '10.0.0.7:30000'
