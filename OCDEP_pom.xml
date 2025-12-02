@@ -1,27 +1,22 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
-         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         http://www.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.yourcompany</groupId>
     <artifactId>oracle-coherence-dependencies</artifactId>
     <version>1.0.0</version>
-    <packaging>jar</packaging>
-
-    <name>oracle-coherence-dependencies</name>
 
     <properties>
-        <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.source>17</maven.compiler.source>
     </properties>
 
     <dependencies>
 
-        <!-- Example dependencies: Your utilities, logging, metrics, etc -->
-
-        <!-- Logging -->
+        <!-- Logging (common for Coherence EE deployments) -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
@@ -33,26 +28,18 @@
             <version>1.5.6</version>
         </dependency>
 
-        <!-- Prometheus Metrics Exporter for Coherence CE -->
+        <!-- Add any dependencies YOU need -->
         <dependency>
-            <groupId>com.oracle.coherence</groupId>
-            <artifactId>coherence-metrics-prometheus</artifactId>
-            <version>24.03</version>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.17.1</version>
         </dependency>
 
-        <!-- Optional: Coherence management over REST -->
+        <!-- Coherence EE: mark as provided -->
         <dependency>
-            <groupId>com.oracle.coherence</groupId>
-            <artifactId>coherence-management-rest</artifactId>
-            <version>24.03</version>
-        </dependency>
-
-        <!-- IMPORTANT: Do not include core Coherence -->
-        <!-- coherence.jar MUST NOT be bundled in the uber jar -->
-        <dependency>
-            <groupId>com.oracle.coherence</groupId>
+            <groupId>com.oracle.coherence.ce</groupId>
             <artifactId>coherence</artifactId>
-            <version>24.03</version>
+            <version>14.1.1-0-0</version>
             <scope>provided</scope>
         </dependency>
 
@@ -62,8 +49,6 @@
         <finalName>coherence-dependencies</finalName>
 
         <plugins>
-
-            <!-- Build a fat JAR: coherence-dependencies.jar -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
@@ -76,12 +61,12 @@
                         </goals>
                         <configuration>
                             <outputFile>${project.build.directory}/coherence-dependencies.jar</outputFile>
+                            <shadedArtifactAttached>false</shadedArtifactAttached>
                             <createDependencyReducedPom>false</createDependencyReducedPom>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
-
         </plugins>
     </build>
 
