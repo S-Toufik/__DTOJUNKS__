@@ -1,0 +1,88 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.yourcompany</groupId>
+    <artifactId>oracle-coherence-dependencies</artifactId>
+    <version>1.0.0</version>
+    <packaging>jar</packaging>
+
+    <name>oracle-coherence-dependencies</name>
+
+    <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+    </properties>
+
+    <dependencies>
+
+        <!-- Example dependencies: Your utilities, logging, metrics, etc -->
+
+        <!-- Logging -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>2.0.13</version>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.5.6</version>
+        </dependency>
+
+        <!-- Prometheus Metrics Exporter for Coherence CE -->
+        <dependency>
+            <groupId>com.oracle.coherence</groupId>
+            <artifactId>coherence-metrics-prometheus</artifactId>
+            <version>24.03</version>
+        </dependency>
+
+        <!-- Optional: Coherence management over REST -->
+        <dependency>
+            <groupId>com.oracle.coherence</groupId>
+            <artifactId>coherence-management-rest</artifactId>
+            <version>24.03</version>
+        </dependency>
+
+        <!-- IMPORTANT: Do not include core Coherence -->
+        <!-- coherence.jar MUST NOT be bundled in the uber jar -->
+        <dependency>
+            <groupId>com.oracle.coherence</groupId>
+            <artifactId>coherence</artifactId>
+            <version>24.03</version>
+            <scope>provided</scope>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <finalName>coherence-dependencies</finalName>
+
+        <plugins>
+
+            <!-- Build a fat JAR: coherence-dependencies.jar -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.6.0</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <outputFile>${project.build.directory}/coherence-dependencies.jar</outputFile>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+        </plugins>
+    </build>
+
+</project>
