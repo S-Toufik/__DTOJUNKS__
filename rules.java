@@ -1,33 +1,24 @@
-import java.util.function.BiConsumer;
-import java.util.function.Function;
 import java.util.Objects;
 
 public interface FieldAccessor<M, T> {
 
-    Function<M, T> getter();
-    BiConsumer<M, T> setter();
+    T get(M model);
 
-    default T get(M model) {
-        return getter().apply(model);
-    }
-
-    default void set(M model, T value) {
-        setter().accept(model, value);
-    }
+    void set(M model, T value);
 
     default boolean compareAndSet(
         M model,
         T expected,
         T update
     ) {
-        T current = get(model);
-        if (Objects.equals(current, expected)) {
+        if (Objects.equals(get(model), expected)) {
             set(model, update);
             return true;
         }
         return false;
     }
 }
+
 
 --------------------
 import lombok.Value;
@@ -38,6 +29,7 @@ public class ConditionalUpdate<M, T> {
     T expected;
     T update;
 }
+
 ------------------
 import lombok.experimental.UtilityClass;
 import java.util.List;
@@ -61,20 +53,21 @@ public class ConditionalUpdateHandler {
         M model,
         List<ConditionalUpdate<M, ?>> updates
     ) {
-        for (ConditionalUpdate<M, ?> u : updates) {
-            if (!matches(model, u)) {
+        for (ConditionalUpdate<M, ?> update : updates) {
+            if (!matches(model, update)) {
                 return false;
             }
         }
-        updates.forEach(u -> applySingle(model, u));
+        updates.forEach(update -> applySingle(model, update));
         return true;
     }
 
     @SuppressWarnings("unchecked")
     private static <M, T> boolean applySingle(
         M model,
-        ConditionalUpdate<M, T> update
+        ConditionalUpdate<M, ?> raw
     ) {
+        ConditionalUpdate<M, T> update = (ConditionalUpdate<M, T>) raw;
         return update.getField()
             .compareAndSet(model, update.getExpected(), update.getUpdate());
     }
@@ -82,35 +75,46 @@ public class ConditionalUpdateHandler {
     @SuppressWarnings("unchecked")
     private static <M, T> boolean matches(
         M model,
-        ConditionalUpdate<M, T> update
+        ConditionalUpdate<M, ?> raw
     ) {
+        ConditionalUpdate<M, T> update = (ConditionalUpdate<M, T>) raw;
         return Objects.equals(
             update.getField().get(model),
             update.getExpected()
         );
     }
 }
+
 --------------
 import java.util.function.Function;
 import java.util.function.BiConsumer;
 
-public enum UserField<T> implements FieldAccessor<User, T> {
+@SuppressWarnings("unchecked")
+public enum UserField implements FieldAccessor<User, Object> {
 
     NAME(User::getName, User::setName),
     AGE(User::getAge, User::setAge),
     ACTIVE(User::isActive, User::setActive);
 
-    private final Function<User, T> getter;
-    private final BiConsumer<User, T> setter;
+    private final Function<User, Object> getter;
+    private final BiConsumer<User, Object> setter;
 
     UserField(
-        Function<User, T> getter,
-        BiConsumer<User, T> setter
+        Function<User, ?> getter,
+        BiConsumer<User, ?> setter
     ) {
-        this.getter = getter;
-        this.setter = setter;
+        this.getter = (Function<User, Object>) getter;
+        this.setter = (BiConsumer<User, Object>) setter;
     }
 
-    @Override public Function<User, T> getter() { return getter; }
-    @Override public BiConsumer<User, T> setter() { return setter; }
+    @Override
+    public Object get(User user) {
+        return getter.apply(user);
+    }
+
+    @Override
+    public void set(User user, Object value) {
+        setter.accept(user, value);
+    }
 }
+
