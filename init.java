@@ -1,7 +1,22 @@
-java \
-  -XX:+UseZGC \
-  -Xms2G -Xmx4G \
-  -XX:+UseStringDeduplication \
-  -XX:+AlwaysPreTouch \
-  -XX:+UseContainerSupport \
-  -jar your-app.jar
+@Component
+public class AppWarmup {
+    private final MyService service;
+    private final WebClient webClient;
+
+    public AppWarmup(MyService service, WebClient webClient) {
+        this.service = service;
+        this.webClient = webClient;
+    }
+
+    @EventListener(ApplicationReadyEvent.class)
+    public void warmup() {
+        // warmup reactive pipeline
+        service.getData().subscribe();
+
+        // warmup webclient
+        webClient.get().uri("/actuator/health")
+                 .retrieve()
+                 .bodyToMono(String.class)
+                 .subscribe();
+    }
+}
